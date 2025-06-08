@@ -1,0 +1,56 @@
+name: Build and Release Kdiff
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-compress:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go environment
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24.3'
+
+    - name: Run 'compress' target from Makefile
+      run: make compress
+
+    - name: Upload kdiff.tgz for release (as artifact)
+      uses: actions/upload-artifact@v4
+      with:
+        name: kdiff-linux-amd64
+        path: kdiff.tgz
+
+  create-github-release:
+    needs: build-and-compress
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'release' && github.event.action == 'published'
+
+    steps:
+    - name: Download kdiff.tgz artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: kdiff-linux-amd64
+        path: .
+
+    - name: Create GitHub Release and Upload Asset
+      uses: softprops/action-gh-release@v1
+      with:
+        files: kdiff.tgz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
