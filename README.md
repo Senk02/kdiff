@@ -36,7 +36,8 @@ Compare actual CPU and memory usage against requested resources with color-coded
 
 ```bash
 # Download the latest release for your platform
-curl -L https://github.com/Senk02/kdiff/releases/latest/download/kdiff-linux-amd64 -o kdiff
+curl -L https://github.com/Senk02/kdiff/releases/latest/download/kdiff.tgz -o kdiff.tgz
+tar -xzvf kdiff.tgz
 chmod +x kdiff
 sudo mv kdiff /usr/local/bin/
 ```
@@ -115,18 +116,8 @@ kdiff --color-red 10 --color-yellow -10 --color-cyan -75
 
 ## 📊 Example Output
 
-```
-Processing 3 running pods...
-Progress: 3/3 pods - Complete!
+![Example output of kdiff](image.png)
 
-+------------------+------------------+-------------+--------------+----------------+-------------+---------------+
-|       POD        | REQUESTED MEMORY | USED MEMORY | MEMORY DIFF  | REQUESTED CPU | USED CPU    | CPU DIFF (%)  |
-+------------------+------------------+-------------+--------------+----------------+-------------+---------------+
-| nginx-deployment | 128.0Mi          | 45.2Mi      | -64.69%      | 100m          | 23m         | -77.00%       |
-| api-server       | 512.0Mi          | 634.1Mi     | 23.85%       | 200m          | 156m        | -22.00%       |
-| database         | 1.0Gi            | 890.3Mi     | -13.18%      | 500m          | 520m        | 4.00%         |
-+------------------+------------------+-------------+--------------+----------------+-------------+---------------+
-```
 
 ## 🛠️ Command Line Options
 
