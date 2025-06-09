@@ -1,7 +1,7 @@
 CORES := $(shell nproc)
 
 build:
-	CGO_ENABLED=0 GOMAXPROCS=$(CORES) go build -p $(CORES) -ldflags="-s -w" -o kdiff
+	CGO_ENABLED=0 GOMAXPROCS=$(CORES) go build -p $(CORES) -ldflags="-s -w" -o kdiff ./src
 
 compress: build
 	tar -cvzf kdiff.tgz ./kdiff

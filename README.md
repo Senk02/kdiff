@@ -6,29 +6,40 @@
 ![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
 ![License: GPLv3](https://img.shields.io/badge/License-GPLv3-yellow.svg?style=for-the-badge)
 
-**A pretty command-line tool to monitor Kubernetes pod resource usage vs requests**
+**A pretty command-line tool to monitor Kubernetes pod resource usage vs requests/limits**
 
-Compare actual CPU and memory usage against requested resources with color-coded output for easy identification of over/under-utilized pods.
+Compare actual CPU and memory usage against requested resources or limits with color-coded output for easy identification of over/under-utilized pods.
 
 </div>
 
 ## ✨ Features
 
 - 🎨 **Color-coded output** - Instantly identify resource utilization patterns
-- 📊 **Detailed comparison** - See requested vs actual CPU and memory usage
+- 📊 **Dual comparison modes** - Compare against requests OR limits
 - 🌐 **Multi-namespace support** - Check single namespace or all at once
 - 🎯 **Flexible filtering** - Show only CPU, memory, or both
 - ⚡ **Performance focused** - Fast scanning with progress indicators
 - 🔧 **Customizable thresholds** - Adjust color coding to your needs
 - 📈 **Usage percentage** - Clear percentage differences for easy analysis
+- 🎛️ **Requests vs Limits modes** - Choose what to compare usage against
 
 ## 🎨 Color Legend
 
-- <span style="color: cyan">**Cyan**</span> - Very under-utilized (< -90% by default)
-- <span style="color: green">**Green**</span> - Under-utilized (-90% to -20% by default)
-- <span style="color: yellow">**Yellow**</span> - Well-utilized (-20% to 0% by default)
-- <span style="color: red">**Red**</span> - Over-utilized (> 0% by default)
+Color coding varies by mode:
+
+### Requests Mode (Default)
+- <span style="color: red">**Red**</span> - Over-utilized (> 0% above requests)
+- <span style="color: yellow">**Yellow**</span> - Warning zone (-20% to 0%)
+- <span style="color: green">**Green**</span> - Well-utilized (-90% to -20%)
+- <span style="color: cyan">**Cyan**</span> - Very under-utilized (< -90%)
 - <span style="color: magenta">**Magenta**</span> - No resource requests set
+
+### Limits Mode
+- <span style="color: red">**Red**</span> - Near limits (> -10% of limits)
+- <span style="color: yellow">**Yellow**</span> - Warning zone (-40% to -10%)
+- <span style="color: green">**Green**</span> - Well-utilized (-80% to -40%)
+- <span style="color: cyan">**Cyan**</span> - Very under-utilized (< -80%)
+- <span style="color: magenta">**Magenta**</span> - No resource limits set
 
 ## 🚀 Installation
 
@@ -69,7 +80,7 @@ sudo mv kdiff /usr/local/bin/
 ### Basic Usage
 
 ```bash
-# Check current namespace
+# Check current namespace (requests mode by default)
 kdiff
 
 # Check specific namespace
@@ -77,21 +88,24 @@ kdiff -n kube-system
 
 # Check all namespaces
 kdiff -a
+
+# Use limits mode instead of requests
+kdiff --mode limits
 ```
 
 ### Advanced Options
 
 ```bash
-# Show only CPU usage across all namespaces
-kdiff -a -o cpu
+# Show only CPU usage across all namespaces in limits mode
+kdiff -a -o cpu -m limits
 
 # Show only memory usage in specific namespace
 kdiff -n production -o memory
 
-# Show only pods exceeding their requests
+# Show only pods exceeding their requests/limits
 kdiff -d
 
-# Ignore pods without resource requests set
+# Ignore pods without resource requests/limits set
 kdiff -i
 
 # Combine filters: only over-utilized pods with requests set
@@ -99,40 +113,67 @@ kdiff -d -i
 
 # Use specific kubeconfig context
 kdiff --context my-cluster-context
+
+# Check limits mode for all namespaces, CPU only
+kdiff -A -o cpu --mode limits
 ```
 
 ### Custom Color Thresholds
 
 ```bash
-# Customize when colors appear (values are percentages)
-kdiff --color-red 10 --color-yellow -10 --color-cyan -75
+# Customize when colors appear for limits mode (values are percentages)
+kdiff --mode limits --color-red -5 --color-yellow -30 --color-cyan -70
 
-# This means:
-# Red: > 10% over requests
-# Yellow: -10% to 10% of requests  
-# Green: -75% to -10% under requests
-# Cyan: < -75% under requests
+# This means for limits mode:
+# Red: > -5% (very close to limits)
+# Yellow: -30% to -5% of limits  
+# Green: -70% to -30% under limits
+# Cyan: < -70% under limits
 ```
 
 ## 📊 Example Output
 
 ![Example output of kdiff](image.png)
 
+## 🔄 Mode Differences
+
+### Requests Mode (Default)
+- Compares actual usage against resource **requests** (what pods ask for)
+- Positive percentages mean usage exceeds requests
+- Helps identify pods that need higher requests
+
+### Limits Mode
+- Compares actual usage against resource **limits** (maximum allowed)
+- Usually shows negative percentages since limits are typically higher than usage
+- Helps identify pods approaching their resource limits
 
 ## 🛠️ Command Line Options
 
 | Flag | Description |
 |------|-------------|
 | `-n <namespace>` | Specify namespace to check (defaults to current context) |
-| `-a` | Check all namespaces |
+| `-a, -A` | Check all namespaces |
 | `-o <filter>` | Filter output to 'cpu' or 'memory' |
-| `-d` | Only show pods with usage over requests |
-| `-i, --ignore-unset` | Ignore pods without resource requests set |
+| `-m, --mode <mode>` | Mode: 'requests' (default) or 'limits' |
+| `-d` | Only show pods with usage over requests/limits |
+| `-i, --ignore-unset` | Ignore pods without resource requests/limits set |
 | `--context <context>` | Use specific kubeconfig context |
 | `-h` | Show help message |
-| `--color-red <float>` | Threshold for red color (default: 0.0) |
-| `--color-yellow <float>` | Threshold for yellow color (default: -20.0) |
-| `--color-cyan <float>` | Threshold for cyan color (default: -90.0) |
+| `--color-red <float>` | Threshold for red color |
+| `--color-yellow <float>` | Threshold for yellow color |
+| `--color-cyan <float>` | Threshold for cyan color |
+
+### Default Color Thresholds
+
+**Requests Mode:**
+- Red: > 0.0% (over requests)
+- Yellow: -20.0% to 0.0% (warning zone)
+- Cyan: < -90.0% (very under-utilized)
+
+**Limits Mode:**
+- Red: > -10.0% (near limits)
+- Yellow: -40.0% to -10.0% (warning zone)
+- Cyan: < -80.0% (very under-utilized)
 
 ## 🤝 Contributing
 
