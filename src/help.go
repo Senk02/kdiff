@@ -17,6 +17,7 @@ func ShowHelpMenu() {
 	fmt.Println("Flags:")
 	fmt.Println("  -n string            The namespace to check (defaults to current context namespace)")
 	fmt.Println("  -o string            Filter output to 'cpu' or 'memory'")
+	fmt.Println("  --kubeconfig string  Path to kubeconfig file (default: $KUBECONFIG or ~/.kube/config)")
 	fmt.Println("  --context string     The kubeconfig context to use")
 	fmt.Println("  -m, --mode string    Mode: 'requests' (default) or 'limits'")
 	fmt.Println("  -d                   Only show pods with usage over requests/limits")

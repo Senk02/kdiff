@@ -157,6 +157,7 @@ kdiff --mode limits --color-red -5 --color-yellow -30 --color-cyan -70
 | `-m, --mode <mode>` | Mode: 'requests' (default) or 'limits' |
 | `-d` | Only show pods with usage over requests/limits |
 | `-i, --ignore-unset` | Ignore pods without resource requests/limits set |
+| `--kubeconfig <kubeconfig>` | Use a specific kubeconfig file |
 | `--context <context>` | Use specific kubeconfig context |
 | `-h` | Show help message |
 | `--color-red <float>` | Threshold for red color |
