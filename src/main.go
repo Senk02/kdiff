@@ -19,13 +19,14 @@ import (
 )
 
 func main() {
-	var namespace, outputFilter, kubeContext, mode string
+	var namespace, outputFilter, kubeconfig, kubeContext, mode string
 	var showDifferenceOnly, allNamespaces, ignoreUnset, showHelp bool
 	var colorThresholds ColorThresholds
 	var colorRedSet, colorYellowSet, colorCyanSet bool
 
 	flag.StringVar(&namespace, "n", "", "The namespace to check (defaults to current context namespace)")
 	flag.StringVar(&outputFilter, "o", "", "Filter output to 'cpu' or 'memory'")
+	flag.StringVar(&kubeconfig, "kubeconfig", "", "Path to the kubeconfig file (defaults to ~/.kube/config)")
 	flag.StringVar(&kubeContext, "context", "", "The kubeconfig context to use")
 	flag.StringVar(&mode, "m", "requests", "Mode: 'requests' (default) or 'limits'")
 	flag.StringVar(&mode, "mode", "requests", "Mode: 'requests' (default) or 'limits'")
@@ -36,7 +37,7 @@ func main() {
 	flag.BoolVar(&ignoreUnset, "ignore-unset", false, "Ignore pods without resource requests/limits set")
 	flag.BoolVar(&showHelp, "h", false, "Show help message")
 
-	// Simple color threshold flags - defaults will be set based on mode
+	// simple color threshold flags - defaults will be set based on mode
 	flag.Float64Var(&colorThresholds.RedThreshold, "color-red", 0.0, "Percentage threshold for red color (over-utilized)")
 	flag.Float64Var(&colorThresholds.YellowThreshold, "color-yellow", 0.0, "Percentage threshold for yellow color (well-utilized)")
 	flag.Float64Var(&colorThresholds.CyanThreshold, "color-cyan", 0.0, "Percentage threshold for cyan color (very under-utilized)")
@@ -67,7 +68,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set defaults based on mode for any color thresholds not explicitly set
+	// set defaults based on mode for any color thresholds not explicitly set
 	if mode == "requests" {
 		if !colorRedSet {
 			colorThresholds.RedThreshold = 0.0
@@ -95,7 +96,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	kubeconfig := filepath.Join(homedir.HomeDir(), ".kube", "config")
+	// set default kubeconfig path if not provided
+	if kubeconfig == "" {
+		kubeconfig = filepath.Join(homedir.HomeDir(), ".kube", "config")
+	}
 
 	var config *rest.Config
 	var err error
